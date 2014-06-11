@@ -24,13 +24,36 @@ class Build:
         timeMaxIndex = ftime.index(timeMax)
         return buildList[timeMaxIndex]
 
+    def delOldestBuild(self,path,rpath):
+        kitList = os.listdir(path)
+        kitList.remove('installog.txt')
+        kitList.remove('installversion.txt')
+        kitList.remove('Integration10.2.5000.275')
+        kitList.remove('Integration10.2.5001.156')
+        kitList.remove('Integration10.2.5002.78')
+        kitList.remove('Integration10.2.5003.83')
+        kitList.remove('Integration10.2.5003.63')
+        ftime = []
+        for folder in kitList:
+            
+            ftime.append(os.path.getctime(os.path.join(path,folder)))
+         
+        ftime_temp = ftime[:]
+        ftime_temp.sort()
+        kitDel = ftime_temp[0]
+        kitDelIndex = ftime.index(kitDel)
+        delKitName = kitList[kitDelIndex]
+        print os.path.join(path,delKitName)
+        shutil.rmtree(os.path.join(path,delKitName)) #delete the local builds 
+        shutil.rmtree(os.path.join(rpath,delKitName)) # delete the remote buils
+
 
 
     def download(self,folder,spath,dpath): 
         try:
             src = os.path.join(os.path.join(os.path.join(os.path.join(spath,folder),'winx64h'),'compressed'),'bisrvr')
             dst = os.path.join(os.path.join(os.path.join(os.path.join(dpath,folder),'winx64h'),'compressed'),'bisrvr')
-            shutil.copytree(src,dst)
+            shutil.copytree(src,dst,10485760)
             
         except:
             print 'copy failed'
@@ -60,7 +83,7 @@ class Build:
         srcFolder.remove('installversion.txt')
         if len(disFolder) == 0:
             for targetFile in srcFolder:
-                shutil.copytree(os.path.join(src,targetFile),os.path.join(dis,targetFile))
+                shutil.copytree(os.path.join(src,targetFile),os.path.join(dis,targetFile),10485760)
         else:
             for filename in disFolder:
                 srcFolder.remove(filename)
@@ -68,7 +91,7 @@ class Build:
             for targetFile in targetFolder:
                 #print os.path.join(src,targetFile)
                 #print os.path.join(dis,targetFile)
-                shutil.copytree(os.path.join(src,targetFile),os.path.join(dis,targetFile))
+                shutil.copytree(os.path.join(src,targetFile),os.path.join(dis,targetFile),10485760)
         return
 
 	
@@ -137,13 +160,13 @@ class HTML:
 
 if __name__ == '__main__':
 
-    spath = ""
+    spath = "\\\sottbuild1f.ottawa.ibm.com\\danube\\cdsets\\danubecdset"
     dpath = "C:\installbuilds"
     insVer = 'installversion.txt'
     insVerPath = os.path.join(dpath,insVer)
     insLog = 'installog.txt'
     insLogPath = os.path.join(dpath,insLog)
-    vmPath = ""
+    vmPath = "//9.110.82.16/installbuilds"
     b = Build()
     bname = b.getLastestBuild(spath)
     zipPath = os.path.join(os.path.join(dpath,bname),'builds')
@@ -169,6 +192,6 @@ if __name__ == '__main__':
     h = HTML()
     h.getcmplst(bname,zipPath)
     h.creathtml(bname,insLogPath)
-
+    b.delOldestBuild(dpath,vmPath)
 
     
