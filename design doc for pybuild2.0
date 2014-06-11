@@ -1,0 +1,9 @@
+Most wanted feature for pybuild 2.0
+1.can automate delete the older version of kit
+2.Automate can show the error message
+3.add the running logs for build
+4.can put an request for an specific build
+
+Roadmap for workbeach:
+1.edit the UI and cog install kit web page like google
+2.put all the info into the databash
