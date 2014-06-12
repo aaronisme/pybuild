@@ -10,19 +10,18 @@ from time import sleep,ctime
 
 
 class thread(threading.Thread):
-    def __init__(self, num, interval):  
+    def __init__(self, num, interval,bpath):  
     	threading.Thread.__init__(self)  
     	self.thread_num = num  
     	self.interval = interval  
         self.thread_stop = False
+        self.bpath = bpath
         
-    def run(self,bpath):
-    	kitSize1 = os.path.getsize(bpath)
-    	kitTime1 = os.path.getctime
+    def run(self):
+    	kitSize1 = os.path.getsize(self.bpath)
     	sleep(60)
-	kitSize2 = os.path.getsize(bpath)
-    	kitTime2 = os.path.getctime
-	speed = float(kitSize2 - kitSize1)/float(kitTime2 - kitTime1)
+	kitSize2 = os.path.getsize(self.bpath)
+	speed = float(kitSize2 - kitSize1)/60.0
 	return speed
 
     def stop(self):
