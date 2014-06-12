@@ -5,6 +5,30 @@ import tarfile
 import glob
 import telnetlib
 import re
+import threading
+from time import sleep,ctime
+
+
+Class thread(threading.Thread):
+    def __init__(self, num, interval):  
+    	threading.Thread.__init__(self)  
+    	self.thread_num = num  
+    	self.interval = interval  
+        self.thread_stop = False
+        
+    def run(self,bpath):
+    	kitSize1 = os.path.getsize(bpath)
+    	kitTime1 = os.path.getctime
+    	sleep(60)
+	kitSize2 = os.path.getsize(bpath)
+    	kitTime2 = os.path.getctime
+	speed = float(kitSize2 - kitSize1)/float(kitTime2 - kitTime1)
+	return speed
+
+    def stop(self):
+    	self.thread_stop = True
+
+
 
 class Build:
     def getLastestBuild(self,path):
@@ -46,7 +70,7 @@ class Build:
         print os.path.join(path,delKitName)
         shutil.rmtree(os.path.join(path,delKitName)) #delete the local builds 
         shutil.rmtree(os.path.join(rpath,delKitName)) # delete the remote buils
-
+       
 
 
     def download(self,folder,spath,dpath): 
