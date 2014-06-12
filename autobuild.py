@@ -9,7 +9,7 @@ import threading
 from time import sleep,ctime
 
 
-Class thread(threading.Thread):
+class thread(threading.Thread):
     def __init__(self, num, interval):  
     	threading.Thread.__init__(self)  
     	self.thread_num = num  
