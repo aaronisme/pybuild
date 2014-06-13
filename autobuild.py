@@ -140,6 +140,30 @@ class ZIP:
 
 
 class HTML:
+    def txt2json(self,path):
+        targetPath="C:\\Program Files (x86)\\Apache Software Foundation\\Apache2.2\\htdocs\\installog.json"
+        sourPath = path
+        file_handler = open(path,'rt')
+        buildList = file_handler.readlines()
+        file_handler.close()
+        jsonlist = []
+        for x in buildList:
+            buildtmp = x.split("\n")
+            build = buildtmp[0]
+            build = build.strip()
+            print build
+            if x == buildList[0]:
+                jsonele = '[' + "{" + '"id":' + str(buildList.index(x)) + ',' + '"text"' + ':' + '"' + build + '"' + "}" + ','
+            if x == buildList[len(buildList)-1]:
+                jsonele = "{" + '"id":' + str(buildList.index(x)) + ',' + '"text"' + ':' + '"' + build + '"' + "}" + ']'
+            if x != buildList[0] and x != buildList[len(buildList)-1]:
+                jsonele = "{" + '"id":' + str(buildList.index(x)) + ',' + '"text"' + ':' + '"' + build + '"' + "}" + ','
+            jsonlist.append(jsonele)
+            jsonname = targetPath
+            file_handler2 = open(jsonname, 'ab')
+            file_handler2.write(jsonele + '\r\n')
+            file_handler2.close()
+    	
     def getcmplst(self,insversion,sourcedir):
         cmplstdir = sourcedir + '\\winx64h\\versions.ini'
         file_handler = open(cmplstdir,'rb')
