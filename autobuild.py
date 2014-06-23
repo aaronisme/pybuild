@@ -6,23 +6,39 @@ import glob
 import telnetlib
 import re
 import threading
-from time import sleep,ctime
+from time import sleep,ctime,gmtime,strftime
 
 
 class thread(threading.Thread):
     def __init__(self, num, interval,bpath):  
     	threading.Thread.__init__(self)  
     	self.thread_num = num  
-    	self.interval = interval  
-        self.thread_stop = False
-        self.bpath = bpath
+    	self.interval = interval
+    	self.thread_stop = False
+    	self.bpath = bpath
         
     def run(self):
-    	kitSize1 = os.path.getsize(self.bpath)
-    	sleep(60)
-	kitSize2 = os.path.getsize(self.bpath)
-	speed = float(kitSize2 - kitSize1)/60.0
-	return speed
+        def getdirsize(dir):  
+           size = 0.0  
+           for root, dirs, files in os.walk(dir):  
+              size += sum([os.path.getsize(os.path.join(root, name)) for name in files])  
+           return size
+        
+        sleep(30)
+        flag = True
+        while(flag == True):
+            kitSize1 = getdirsize(self.bpath)
+            print self.bpath
+            print kitSize1
+            sleep(60)
+            kitSize2 = getdirsize(self.bpath)
+            print kitSize2
+            speed = float(kitSize2 - kitSize1)/60.0/1024
+            print speed
+            speedlog = 'The Downloading Speed is ' + str(speed) + 'kb/s'
+            dlog.writelog(speedlog,logPath)
+            if speed == 0.0:
+                flag = False
 
     def stop(self):
     	self.thread_stop = True
@@ -76,13 +92,16 @@ class Build:
         try:
             src = os.path.join(os.path.join(os.path.join(os.path.join(spath,folder),'winx64h'),'compressed'),'bisrvr')
             dst = os.path.join(os.path.join(os.path.join(os.path.join(dpath,folder),'winx64h'),'compressed'),'bisrvr')
-            shutil.copytree(src,dst,10485760)
-            
+            t = thread(1,1,dst)
+            t.start()
+            dlog.writelog('Start downloading',logPath)
+            shutil.copytree(src,dst,524288000)
+            t.stop()
         except:
             print 'copy failed'
             shutil.rmtree(os.path.join(dpath,folder))
             sys.exit(0)
-        return
+        #return
 
     def setversion(self,version,versionfile,verlog):
         version_handler = open(versionfile,'wb')
@@ -104,9 +123,10 @@ class Build:
         disFolder = os.listdir(dis)
         srcFolder.remove('installog.txt')
         srcFolder.remove('installversion.txt')
+        dlog.writelog('Start copying to VM',logPath)
         if len(disFolder) == 0:
             for targetFile in srcFolder:
-                shutil.copytree(os.path.join(src,targetFile),os.path.join(dis,targetFile),10485760)
+                shutil.copytree(os.path.join(src,targetFile),os.path.join(dis,targetFile),524288000)
         else:
             for filename in disFolder:
                 srcFolder.remove(filename)
@@ -114,7 +134,7 @@ class Build:
             for targetFile in targetFolder:
                 #print os.path.join(src,targetFile)
                 #print os.path.join(dis,targetFile)
-                shutil.copytree(os.path.join(src,targetFile),os.path.join(dis,targetFile),10485760)
+                shutil.copytree(os.path.join(src,targetFile),os.path.join(dis,targetFile),524288000)
         return
 
 	
@@ -127,42 +147,45 @@ class ZIP:
     def extract_file(self,zippath,uzippath):
         try:
             print 'start unzipping'
+            dlog.writelog('Start unzipping',logPath)
             tar = tarfile.open(zippath)
             names = tar.getnames()
             for name in names:
                 tar.extract(name,path= uzippath)
             tar.close()
         except:
+            dlog.writelog('unZip failed',logPath)
             print 'unZip failed'
             sys.exit(0)
             return
         print 'unzip completely'
+        dlog.writelog('unZip completely',logPath)
 
 
 class HTML:
     def txt2json(self,path):
         targetPath="C:\\Program Files (x86)\\Apache Software Foundation\\Apache2.2\\htdocs\\installog.json"
         sourPath = path
-        file_handler = open(path,'rt')
+        file_handler = open(sourPath,'rt')
         buildList = file_handler.readlines()
+        buildList.reverse()
         file_handler.close()
         jsonlist = []
         for x in buildList:
             buildtmp = x.split("\n")
             build = buildtmp[0]
             build = build.strip()
-            print build
             if x == buildList[0]:
                 jsonele = '[' + "{" + '"id":' + str(buildList.index(x)) + ',' + '"text"' + ':' + '"' + build + '"' + "}" + ','
             if x == buildList[len(buildList)-1]:
                 jsonele = "{" + '"id":' + str(buildList.index(x)) + ',' + '"text"' + ':' + '"' + build + '"' + "}" + ']'
             if x != buildList[0] and x != buildList[len(buildList)-1]:
                 jsonele = "{" + '"id":' + str(buildList.index(x)) + ',' + '"text"' + ':' + '"' + build + '"' + "}" + ','
-            jsonlist.append(jsonele)
-            jsonname = targetPath
-            file_handler2 = open(jsonname, 'ab')
-            file_handler2.write(jsonele + '\r\n')
-            file_handler2.close()
+            jsonlist.append(jsonele + '\r\n')
+        jsonname = targetPath
+        file_handler2 = open(jsonname, 'wb')
+        file_handler2.writelines(jsonlist)
+        file_handler2.close()
     	
     def getcmplst(self,insversion,sourcedir):
         cmplstdir = sourcedir + '\\winx64h\\versions.ini'
@@ -199,11 +222,16 @@ class HTML:
         file_handler.writelines(html)
         file_handler.close()
 
-
+class Log:
+    def writelog(self,log,logpath):
+        path = logpath
+        currentime = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
+        file_handler = open(path,'ab')
+        file_handler.writelines(currentime + ' '+ log + '\n')
+        file_handler.close()
 		
 
 		
-	
 
 if __name__ == '__main__':
 
@@ -214,31 +242,38 @@ if __name__ == '__main__':
     insLog = 'installog.txt'
     insLogPath = os.path.join(dpath,insLog)
     vmPath = "//9.110.82.16/installbuilds"
-    b = Build()
-    bname = b.getLastestBuild(spath)
-    zipPath = os.path.join(os.path.join(dpath,bname),'builds')
-    print bname
-    pattern = re.compile(r'Integration10.2.6100')
-    match = pattern.match(bname)
-    if match:
-        if bname != b.getversion(insVerPath):
-            b.download(bname,spath,dpath)
-            b.setversion(bname,insVerPath,insLogPath)
+    logPath = "C:\\Aaron\\python\\downloadinglog.txt"
+    try:
+        dlog = Log()
+        b = Build()
+        bname = b.getLastestBuild(spath)
+        dlog.writelog(bname,logPath)
+        zipPath = os.path.join(os.path.join(dpath,bname),'builds')
+        print bname
+        pattern = re.compile(r'Integration10.2.6100')
+        match = pattern.match(bname)
+        if match:
+            if bname != b.getversion(insVerPath):
+                b.download(bname,spath,dpath)
+                b.setversion(bname,insVerPath,insLogPath)
+            else:
+                print 'the build exist'
+                sys.exit(0)
         else:
-            print 'the build exist'
+            print 'the build is not vaild'
             sys.exit(0)
-    else:
-        print 'the build is not vaild'
-        sys.exit(0)
-    tarBuildFilePath = glob.glob(os.path.join(dpath,bname)+"/*/*/*/*.tar.gz")[0]
-    b.copy2vm(dpath,vmPath)
-    z = ZIP()
-    z.creat_uzippath(zipPath)
-    z.extract_file(tarBuildFilePath,zipPath)
+        tarBuildFilePath = glob.glob(os.path.join(dpath,bname)+"/*/*/*/*.tar.gz")[0]
+        b.copy2vm(dpath,vmPath)
+        z = ZIP()
+        z.creat_uzippath(zipPath)
+        z.extract_file(tarBuildFilePath,zipPath)
 
-    h = HTML()
-    h.getcmplst(bname,zipPath)
-    h.creathtml(bname,insLogPath)
-    b.delOldestBuild(dpath,vmPath)
+        h = HTML()
+        h.getcmplst(bname,zipPath)
+        h.txt2json(insLogPath)
+        b.delOldestBuild(dpath,vmPath)
+    except Exception,e:
+        emessage = str(e)
+        dlog.writelog(emessage,logPath)
 
     
