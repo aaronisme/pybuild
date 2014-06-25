@@ -67,11 +67,11 @@ class Build:
         kitList = os.listdir(path)
         kitList.remove('installog.txt')
         kitList.remove('installversion.txt')
-        kitList.remove('Integration10.2.5000.275')
-        kitList.remove('Integration10.2.5001.156')
-        kitList.remove('Integration10.2.5002.78')
-        kitList.remove('Integration10.2.5003.83')
-        kitList.remove('Integration10.2.5003.63')
+        kitList.remove('b1')
+        kitList.remove('b2')
+        kitList.remove('b3')
+        kitList.remove('b4')
+        kitList.remove('b5')
         ftime = []
         for folder in kitList:
             
@@ -197,30 +197,6 @@ class HTML:
         file_handler2.writelines(cmplst)
         file_handler2.close()
 
-    def creathtml(self,insversion,verlogdir):
-
-        html1 = ['<html>\n', '\t<body>\n', '\t\t<h1>IBM Cognos Componet List</h1>\n', '\t\t<hr />\n', '\t\t<p>\n']
-        html3 =[]
-        html2 = ['\t\t</p>\n', '\t\t</body>\n', '</html>']
-
-        file_handler = open(verlogdir,'r')
-        version = file_handler.readlines()
-        file_handler.close()
-
-        for every_version in version:
-            link = '\t\t\t<p><a href="/'+ every_version.rstrip('\n') +'.txt" target="_blank">' + every_version.rstrip('\n') + '\t\t</a></p> \r'
-
-            html3.append(link)
-            print(html3)
-
-        #html3.append('\t\t\t<a href="/'+ insversion +'.txt" target="_blank">' + insversion + '</a> \r')
-        html = html1 + html3 + html2
-        htmldir = "C:\\Program Files (x86)\\Apache Software Foundation\\Apache2.2\\htdocs\\cmplst.html"
-        file_handler = open(htmldir,'wb')
-        
-        print(html)
-        file_handler.writelines(html)
-        file_handler.close()
 
 class Log:
     def writelog(self,log,logpath):
@@ -235,13 +211,13 @@ class Log:
 
 if __name__ == '__main__':
 
-    spath = "\\\sottbuild1f.ottawa.ibm.com\\danube\\cdsets\\danubecdset"
+    spath = "path"
     dpath = "C:\installbuilds"
     insVer = 'installversion.txt'
     insVerPath = os.path.join(dpath,insVer)
     insLog = 'installog.txt'
     insLogPath = os.path.join(dpath,insLog)
-    vmPath = "//9.110.82.16/installbuilds"
+    vmPath = "vpath"
     logPath = "C:\\Aaron\\python\\downloadinglog.txt"
     try:
         dlog = Log()
@@ -250,7 +226,7 @@ if __name__ == '__main__':
         dlog.writelog(bname,logPath)
         zipPath = os.path.join(os.path.join(dpath,bname),'builds')
         print bname
-        pattern = re.compile(r'Integration10.2.6100')
+        pattern = re.compile(r'buildname')
         match = pattern.match(bname)
         if match:
             if bname != b.getversion(insVerPath):
